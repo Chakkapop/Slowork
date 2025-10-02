@@ -1,0 +1,75 @@
+-- ============================================
+-- Users (Employers & Freelancers)
+-- ============================================
+INSERT INTO slowork_user 
+(username, password, email, first_name, last_name, role, phone, location_city,
+ rating_avg, rating_count, is_active, is_staff, is_superuser, date_joined, created_at, updated_at)
+VALUES
+('employer1', 'password', 'employer1@mail.com', 'Somchai', 'Employer', 
+ 'employer', '0811111111', 'Bangkok', 0.0 , 0,
+ true, false, false, NOW(), NOW(), NOW()),
+('employer2', 'password', 'employer2@mail.com', 'Suda', 'Employer', 
+ 'employer', '0822222222', 'Chiang Mai', 0.0, 0,
+ true, false, false, NOW(), NOW(), NOW()),
+('freelancer1', 'password', 'freelancer1@mail.com', 'Anan', 'Freelancer', 
+ 'freelancer', '0833333333', 'Khon Kaen', 0.0, 0,
+ true, false, false, NOW(), NOW(), NOW()),
+('freelancer2', 'password', 'freelancer2@mail.com', 'Nok', 'Freelancer', 
+ 'freelancer', '0844444444', 'Phuket', 0.0, 0 ,
+ true, false, false, NOW(), NOW(), NOW());
+
+-- ============================================
+-- Job Categories
+-- ============================================
+INSERT INTO slowork_jobcategory (name, slug, created_at, updated_at)
+VALUES
+('Web Development', 'web-development', NOW(), NOW()),
+('Graphic Design', 'graphic-design', NOW(), NOW()),
+('Content Writing', 'content-writing', NOW(), NOW());
+
+-- ============================================
+-- Jobs (posted by employers)
+-- ============================================
+INSERT INTO slowork_job 
+(employer_id, title, description, budget_min, budget_max, location_city, 
+  deadline_date, status, created_at, updated_at)
+VALUES
+(1, 'สร้างเว็บไซต์บริษัท', 'ต้องการเว็บไซต์บริษัท 5 หน้า รองรับมือถือ', 10000, 20000, 'Bangkok',  '2025-12-31', 'open', NOW(), NOW()),
+(2, 'ออกแบบโลโก้ใหม่', 'ขอโลโก้ที่ดูทันสมัย ใช้สำหรับ rebranding', 3000, 5000, 'Chiang Mai', '2025-10-30', 'open', NOW(), NOW());
+
+-- ============================================
+-- Jobs ↔ Categories (Many-to-Many)
+-- job_id, jobcategory_id
+-- ============================================
+INSERT INTO slowork_job_categories (job_id, jobcategory_id)
+VALUES
+(1, 1), -- Website job -> Web Development
+(2, 2); -- Logo job -> Graphic Design
+
+-- ============================================
+-- Job Applications (freelancers apply for jobs)
+-- ============================================
+INSERT INTO slowork_application 
+(job_id, freelancer_id, cover_message, proposed_budget, proposed_days, status, created_at, updated_at)
+VALUES
+(1, 3, 'ผมสามารถทำเว็บให้เสร็จใน 20 วันครับ', 15000, 20, 'pending', NOW(), NOW()),
+(1, 4, 'เสนอราคา 18000 เสร็จภายใน 25 วัน', 18000, 25, 'pending', NOW(), NOW()),
+(2, 3, 'สามารถออกแบบโลโก้ได้ใน 5 วัน', 4000, 5, 'accepted', NOW(), NOW());
+
+-- ============================================
+-- Work Submissions (freelancer submits finished work)
+-- ============================================
+INSERT INTO slowork_worksubmission 
+(application_id, job_id, user_id, text_notes, status, created_at, updated_at)
+VALUES
+(3, 2, 3, 'ส่งไฟล์โลโก้ทั้งหมด 3 แบบ', 'submitted', NOW(), NOW());
+
+-- slowork_notification mock data
+INSERT INTO slowork_notification
+(user_id, type, title, message, ref_type, ref_id, is_read, created_at)
+VALUES
+(1, 'apply', 'มี freelancer สมัครงาน', 'มี freelancer สมัครงาน "สร้างเว็บไซต์"', 'job', 1, FALSE, NOW()),
+
+(2, 'review', 'งานของคุณมีการอัปเดต', 'ใบสมัครของคุณสำหรับงาน "ออกแบบโลโก้" ถูกยอมรับแล้ว', 'job_application', 3, FALSE, NOW()),
+
+(3, 'system', 'ยินดีต้อนรับสู่ระบบ', 'ขอบคุณที่สมัครสมาชิก slowork', NULL, NULL, FALSE, NOW());
