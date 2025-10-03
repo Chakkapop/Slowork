@@ -1,0 +1,61 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Jobs · Slowork{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Find Local Services</h2>
+    <form method="get" class="grid">
+        <div>
+            <label for="id_search">Keyword</label>
+            {{ filter_form.search }}
+        </div>
+        <div>
+            <label for="id_category">Category</label>
+            {{ filter_form.category }}
+        </div>
+        <div>
+            <label for="id_status">Status</label>
+            {{ filter_form.status }}
+        </div>
+        <div>
+            <label for="id_posted">Posted</label>
+            {{ filter_form.posted }}
+        </div>
+        <div style="align-self: end;">
+            <button type="submit">Apply Filters</button>
+        </div>
+    </form>
+</section>
+
+<section>
+    {% if jobs %}
+        <ul>
+            {% for job in jobs %}
+                <li>
+                    <h3><a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a></h3>
+                    <p>{{ job.description|truncatewords:30 }}</p>
+                    <p>
+                        <strong>Category:</strong> {{ job.category.name }} ·
+                        <strong>Status:</strong> {{ job.get_status_display }} ·
+                        <strong>Budget:</strong> {{ job.budget_min }} - {{ job.budget_max }}
+                    </p>
+                    <p>
+                        Posted {{ job.created_at|timesince }} ago by {{ job.employer.username }}
+                        {% if job.location_city %} · {{ job.location_city }}{% endif %}
+                    </p>
+                    {% if user.is_authenticated and user.is_freelancer %}
+                        {% if job.pk in user_applied_job_ids %}
+                            <em>You have applied</em>
+                        {% elif job.status == job.STATUS_OPEN %}
+                            <a class="button" href="{% url 'application_create' job.pk %}">Apply now</a>
+                        {% endif %}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No jobs found. Try adjusting your filters.</p>
+    {% endif %}
+</section>
+{% endblock %}

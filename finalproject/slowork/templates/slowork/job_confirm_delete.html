@@ -1,0 +1,13 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Delete Job · Slowork{% endblock %}
+
+{% block content %}
+<h2>Delete Job</h2>
+<p>Are you sure you want to delete the job "{{ job.title }}"? This action cannot be undone.</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'job_detail' job.pk %}">Cancel</a>
+</form>
+{% endblock %}

@@ -1,6 +1,9 @@
-from django.apps import AppConfig
+﻿from django.apps import AppConfig
 
 
 class SloworkConfig(AppConfig):
-    default_auto_field = 'django.db.models.BigAutoField'
-    name = 'slowork'
+    default_auto_field = "django.db.models.BigAutoField"
+    name = "slowork"
+
+    def ready(self) -> None:
+        from . import signals  # noqa: F401

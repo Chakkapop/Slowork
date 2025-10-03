@@ -1,0 +1,44 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}Slowork Marketplace{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simpledotcss/simple.min.css">
+</head>
+<body>
+<header>
+    <h1><a href="{% url 'home' %}">Slowork</a></h1>
+    <nav>
+        <a href="{% url 'home' %}">Jobs</a>
+        {% if user.is_authenticated and user.is_employer %}
+            <a href="{% url 'job_create' %}">Post a Job</a>
+        {% endif %}
+        {% if user.is_authenticated %}
+            <a href="{% url 'notifications' %}">Notifications {% with unread=user.unread_notifications_count %}{% if unread %}({{ unread }}){% endif %}{% endwith %}</a>
+            <a href="{% url 'profile' %}">Profile</a>
+            <form action="{% url 'logout' %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;padding:0;color:inherit;font:inherit;cursor:pointer;">Logout</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'register' %}">Sign Up</a>
+        {% endif %}
+    </nav>
+</header>
+<main>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+<footer>
+    <small>&copy; {% now "Y" %} Slowork Marketplace</small>
+</footer>
+</body>
+</html>

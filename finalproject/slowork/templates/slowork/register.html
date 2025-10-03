@@ -1,0 +1,13 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Sign Up · Slowork{% endblock %}
+
+{% block content %}
+<h2>Create your Slowork account</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Sign up</button>
+</form>
+<p>Already have an account? <a href="{% url 'login' %}">Log in</a>.</p>
+{% endblock %}

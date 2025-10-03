@@ -1,0 +1,156 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}{{ job.title }} - Slowork{% endblock %}
+
+{% block content %}
+<article>
+    <h2>{{ job.title }}</h2>
+    <p>{{ job.description|linebreaks }}</p>
+    <p>
+        <strong>Category:</strong> {{ job.category.name }} -
+        <strong>Status:</strong> {{ job.get_status_display }} -
+        <strong>Budget:</strong> {{ job.budget_min }} - {{ job.budget_max }}
+    </p>
+    <p>
+        <strong>Employer:</strong> {{ job.employer.username }}
+        {% if job.location_city %} - <strong>Location:</strong> {{ job.location_city }}{% endif %}
+        {% if job.deadline_date %} - <strong>Deadline:</strong> {{ job.deadline_date }}{% endif %}
+    </p>
+    {% if job.selected_application %}
+        <p><strong>Assigned Freelancer:</strong> {{ job.selected_application.freelancer.username }}</p>
+    {% endif %}
+    {% if user.is_authenticated %}
+        {% if user == job.employer or user.is_market_admin %}
+        <p>
+            <a href="{% url 'job_update' job.pk %}">Edit</a>
+            <a href="{% url 'job_delete' job.pk %}">Delete</a>
+            {% if job.status != job.STATUS_COMPLETED %}
+                <form method="post" action="{% url 'job_mark_completed' job.pk %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit">Mark as Completed</button>
+                </form>
+            {% endif %}
+        </p>
+        {% endif %}
+    {% endif %}
+</article>
+
+{% if application_form %}
+<section>
+    <h3>Apply to this job</h3>
+    <form method="post" action="{% url 'application_create' job.pk %}">
+        {% csrf_token %}
+        {{ application_form.as_p }}
+        <button type="submit">Submit application</button>
+    </form>
+</section>
+{% elif user_application %}
+<section>
+    <h3>Your application</h3>
+    <p>Status: {{ user_application.get_status_display }}</p>
+    <p>Proposed budget: {{ user_application.proposed_budget }} ({{ user_application.proposed_days }} days)</p>
+    {% if user_application.cover_message %}
+        <p>{{ user_application.cover_message|linebreaks }}</p>
+    {% endif %}
+    {% if user_application.status == user_application.STATUS_ACCEPTED %}
+        <p>
+            <a class="button" href="{% url 'work_submission_create' user_application.pk %}">Submit work</a>
+        </p>
+    {% endif %}
+</section>
+{% endif %}
+
+{% if user.is_authenticated %}
+{% if user == job.employer or user.is_market_admin %}
+<section>
+    <h3>Applications</h3>
+    {% if applications %}
+        <ul>
+            {% for application in applications %}
+                <li>
+                    <strong>{{ application.freelancer.username }}</strong>
+                    ({{ application.proposed_budget }} / {{ application.proposed_days }} days)
+                    <span>- {{ application.get_status_display }}</span>
+                    {% if application.cover_message %}
+                        <p>{{ application.cover_message|linebreaks }}</p>
+                    {% endif %}
+                    {% if job.status == job.STATUS_OPEN and application.status == application.STATUS_PENDING %}
+                        <form method="post" action="{% url 'application_update_status' application.pk 'accept' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form method="post" action="{% url 'application_update_status' application.pk 'reject' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Reject</button>
+                        </form>
+                    {% elif application.status == application.STATUS_ACCEPTED %}
+                        <em>Accepted</em>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No applications yet.</p>
+    {% endif %}
+</section>
+{% endif %}
+{% endif %}
+
+<section>
+    <h3>Work submissions</h3>
+    {% if submissions %}
+        <ul>
+            {% for submission in submissions %}
+                <li>
+                    <strong>{{ submission.submitted_by.username }}</strong> - {{ submission.get_status_display }} - {{ submission.created_at|date:"SHORT_DATETIME_FORMAT" }}
+                    {% if submission.text_notes %}
+                        <p>{{ submission.text_notes|linebreaks }}</p>
+                    {% endif %}
+                    {% if user.is_authenticated and user == job.employer %}
+                        {% if submission.status != submission.STATUS_APPROVED %}
+                            <form method="post" action="{% url 'work_submission_update_status' submission.pk 'approve' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit">Approve</button>
+                            </form>
+                        {% endif %}
+                        {% if submission.status != submission.STATUS_CHANGES_REQUESTED %}
+                            <form method="post" action="{% url 'work_submission_update_status' submission.pk 'request_changes' %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit">Request changes</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No submissions yet.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h3>Reviews</h3>
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li>
+                    <strong>{{ review.reviewer.username }}</strong> rated {{ review.rating }}/5 on {{ review.created_at|date:"SHORT_DATE_FORMAT" }}
+                    {% if review.comment %}
+                        <p>{{ review.comment|linebreaks }}</p>
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews yet.</p>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+        {% if user == job.employer and job.status == job.STATUS_COMPLETED %}
+            <a href="{% url 'review_create' job.pk 'freelancer' %}">Review freelancer</a>
+        {% elif user.is_freelancer and job.selected_application and job.selected_application.freelancer == user and job.status == job.STATUS_COMPLETED %}
+            <a href="{% url 'review_create' job.pk 'employer' %}">Review employer</a>
+        {% endif %}
+    {% endif %}
+</section>
+{% endblock %}

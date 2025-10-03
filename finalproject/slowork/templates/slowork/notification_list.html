@@ -1,0 +1,33 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Notifications · Slowork{% endblock %}
+
+{% block content %}
+<h2>Notifications</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.mark_all_read }} <label for="id_mark_all_read">Mark all as read</label>
+    <button type="submit">Update</button>
+</form>
+
+{% if notifications %}
+    <ul>
+        {% for notification in notifications %}
+            <li {% if not notification.is_read %}style="font-weight:bold;"{% endif %}>
+                <strong>{{ notification.title }}</strong>
+                <small>{{ notification.created_at|date:"SHORT_DATETIME_FORMAT" }}</small>
+                <p>{{ notification.message }}</p>
+                {% if not notification.is_read %}
+                    <form method="post" action="{% url 'notification_mark_read' notification.pk %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'notifications' %}">
+                        <button type="submit">Mark as read</button>
+                    </form>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>No notifications yet.</p>
+{% endif %}
+{% endblock %}

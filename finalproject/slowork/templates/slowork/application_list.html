@@ -1,0 +1,52 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Applications · {{ job.title }}{% endblock %}
+
+{% block content %}
+<h2>Applications for "{{ job.title }}"</h2>
+{% if applications %}
+    <table>
+        <thead>
+            <tr>
+                <th>Freelancer</th>
+                <th>Budget</th>
+                <th>Days</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for application in applications %}
+            <tr>
+                <td>{{ application.freelancer.username }}</td>
+                <td>{{ application.proposed_budget }}</td>
+                <td>{{ application.proposed_days }}</td>
+                <td>{{ application.get_status_display }}</td>
+                <td>
+                    {% if job.status == job.STATUS_OPEN and application.status == application.STATUS_PENDING %}
+                        <form method="post" action="{% url 'application_update_status' application.pk 'accept' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Accept</button>
+                        </form>
+                        <form method="post" action="{% url 'application_update_status' application.pk 'reject' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit">Reject</button>
+                        </form>
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+            </tr>
+            {% if application.cover_message %}
+                <tr>
+                    <td colspan="5">{{ application.cover_message|linebreaks }}</td>
+                </tr>
+            {% endif %}
+        {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No applications yet.</p>
+{% endif %}
+<p><a href="{% url 'job_detail' job.pk %}">Back to job</a></p>
+{% endblock %}

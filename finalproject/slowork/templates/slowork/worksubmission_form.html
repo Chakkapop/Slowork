@@ -1,0 +1,14 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}Submit Work · {{ job.title }}{% endblock %}
+
+{% block content %}
+<h2>Submit work for "{{ job.title }}"</h2>
+<p>Application accepted for {{ application.job.title }}.</p>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Submit work</button>
+    <a href="{% url 'job_detail' job.pk %}">Cancel</a>
+</form>
+{% endblock %}
