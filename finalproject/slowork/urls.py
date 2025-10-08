@@ -6,6 +6,7 @@ urlpatterns = [
     path("", views.home, name="home"),
     path("jobs/", views.home, name="job_list"),
     path("register/", views.register, name="register"),
+    path("users/<int:user_id>/", views.profile_view, name="profile_view"),
     path("profile/", views.profile_edit, name="profile"),
     path("jobs/create/", views.job_create, name="job_create"),
     path("jobs/<int:pk>/", views.job_detail, name="job_detail"),
@@ -19,14 +20,14 @@ urlpatterns = [
         name="application_create",
     ),
     path(
-        "applications/<int:pk>/<str:action>/",
-        views.application_update_status,
-        name="application_update_status",
-    ),
-    path(
         "applications/<int:application_id>/submit/",
         views.work_submission_create,
         name="work_submission_create",
+    ),
+    path(
+        "applications/<int:pk>/<str:action>/",
+        views.application_update_status,
+        name="application_update_status",
     ),
     path(
         "submissions/<int:submission_id>/<str:action>/",

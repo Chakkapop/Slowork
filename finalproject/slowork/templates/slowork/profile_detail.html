@@ -1,0 +1,62 @@
+﻿{% extends "slowork/base.html" %}
+
+{% block title %}{{ profile_user.username }} - Profile · Slowork{% endblock %}
+
+{% block content %}
+<h2>{{ profile_user.username }}</h2>
+<p><strong>Role:</strong> {{ profile_user.get_role_display }}</p>
+{% if profile_user.first_name or profile_user.last_name %}
+    <p><strong>Name:</strong> {{ profile_user.get_full_name|default:profile_user.username }}</p>
+{% endif %}
+{% if profile_user.location_city %}
+    <p><strong>City:</strong> {{ profile_user.location_city }}</p>
+{% endif %}
+{% if profile_user.phone %}
+    <p><strong>Phone:</strong> {{ profile_user.phone }}</p>
+{% endif %}
+{% if profile_user.rating_count %}
+    <p><strong>Rating:</strong> {{ profile_user.rating_avg }} / 5 ({{ profile_user.rating_count }} reviews)</p>
+{% else %}
+    <p><strong>Rating:</strong> ยังไม่มีรีวิว</p>
+{% endif %}
+
+{% if request.user.is_authenticated and request.user == profile_user %}
+    <p><a href="{% url 'profile' %}">Edit your profile</a></p>
+{% endif %}
+
+{% if pending_review_jobs %}
+    <section>
+        <h3>Pending reviews</h3>
+        <p>คุณมีงานที่เสร็จแล้วกับผู้ใช้นี้ สามารถรีวิวได้ด้านล่าง:</p>
+        <ul>
+            {% for job in pending_review_jobs %}
+                <li>
+                    {{ job.title }}
+                    <a class="button" href="{% url 'review_create' job.pk review_target %}">Review now</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </section>
+{% endif %}
+
+<section>
+    <h3>Recent reviews</h3>
+    {% if reviews %}
+        <ul>
+            {% for review in reviews %}
+                <li>
+                    <strong>{{ review.reviewer.username }}</strong>
+                    ให้คะแนน {{ review.rating }} / 5
+                    <span> · {{ review.created_at|date:"SHORT_DATE_FORMAT" }}</span>
+                    {% if review.comment %}
+                        <p>{{ review.comment|linebreaks }}</p>
+                    {% endif %}
+                    <small>งาน: {{ review.job.title }}</small>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>ยังไม่มีรีวิวสำหรับผู้ใช้นี้</p>
+    {% endif %}
+</section>
+{% endblock %}

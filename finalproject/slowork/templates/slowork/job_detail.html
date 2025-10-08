@@ -12,12 +12,12 @@
         <strong>Budget:</strong> {{ job.budget_min }} - {{ job.budget_max }}
     </p>
     <p>
-        <strong>Employer:</strong> {{ job.employer.username }}
+        <strong>Employer:</strong> <a href="{% url 'profile_view' job.employer.pk %}">{{ job.employer.username }}</a>
         {% if job.location_city %} - <strong>Location:</strong> {{ job.location_city }}{% endif %}
         {% if job.deadline_date %} - <strong>Deadline:</strong> {{ job.deadline_date }}{% endif %}
     </p>
     {% if job.selected_application %}
-        <p><strong>Assigned Freelancer:</strong> {{ job.selected_application.freelancer.username }}</p>
+        <p><strong>Assigned Freelancer:</strong> <a href="{% url 'profile_view' job.selected_application.freelancer.pk %}">{{ job.selected_application.freelancer.username }}</a></p>
     {% endif %}
     {% if user.is_authenticated %}
         {% if user == job.employer or user.is_market_admin %}
@@ -68,7 +68,7 @@
         <ul>
             {% for application in applications %}
                 <li>
-                    <strong>{{ application.freelancer.username }}</strong>
+                    <strong><a href="{% url 'profile_view' application.freelancer.pk %}">{{ application.freelancer.username }}</a></strong>
                     ({{ application.proposed_budget }} / {{ application.proposed_days }} days)
                     <span>- {{ application.get_status_display }}</span>
                     {% if application.cover_message %}
@@ -102,7 +102,7 @@
         <ul>
             {% for submission in submissions %}
                 <li>
-                    <strong>{{ submission.submitted_by.username }}</strong> - {{ submission.get_status_display }} - {{ submission.created_at|date:"SHORT_DATETIME_FORMAT" }}
+                    <strong><a href="{% url 'profile_view' submission.submitted_by.pk %}">{{ submission.submitted_by.username }}</a></strong> - {{ submission.get_status_display }} - {{ submission.created_at|date:"SHORT_DATETIME_FORMAT" }}
                     {% if submission.text_notes %}
                         <p>{{ submission.text_notes|linebreaks }}</p>
                     {% endif %}
@@ -134,7 +134,7 @@
         <ul>
             {% for review in reviews %}
                 <li>
-                    <strong>{{ review.reviewer.username }}</strong> rated {{ review.rating }}/5 on {{ review.created_at|date:"SHORT_DATE_FORMAT" }}
+                    <strong><a href="{% url 'profile_view' review.reviewer.pk %}">{{ review.reviewer.username }}</a></strong> rated {{ review.rating }}/5 on {{ review.created_at|date:"SHORT_DATE_FORMAT" }}
                     {% if review.comment %}
                         <p>{{ review.comment|linebreaks }}</p>
                     {% endif %}
