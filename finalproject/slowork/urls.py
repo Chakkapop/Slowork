@@ -19,6 +19,7 @@ urlpatterns = [
         views.application_create,
         name="application_create",
     ),
+    path("my-jobs/", views.employer_job_list, name="employer_job_list"),
     path(
         "applications/<int:application_id>/submit/",
         views.work_submission_create,

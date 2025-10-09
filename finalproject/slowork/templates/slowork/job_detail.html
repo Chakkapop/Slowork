@@ -20,7 +20,7 @@
         <p><strong>Assigned Freelancer:</strong> <a href="{% url 'profile_view' job.selected_application.freelancer.pk %}">{{ job.selected_application.freelancer.username }}</a></p>
     {% endif %}
     {% if user.is_authenticated %}
-        {% if user == job.employer or user.is_market_admin %}
+        {% if user == job.employer %}
         <p>
             <a href="{% url 'job_update' job.pk %}">Edit</a>
             <a href="{% url 'job_delete' job.pk %}">Delete</a>
@@ -31,6 +31,9 @@
                 </form>
             {% endif %}
         </p>
+        {% endif %}
+        {% if user.is_market_admin %}
+            <a href="{% url 'job_delete' job.pk %}">Delete</a>
         {% endif %}
     {% endif %}
 </article>
@@ -96,6 +99,7 @@
 {% endif %}
 {% endif %}
 
+{% if user == job.employer %}
 <section>
     <h3>Work submissions</h3>
     {% if submissions %}
@@ -127,6 +131,7 @@
         <p>No submissions yet.</p>
     {% endif %}
 </section>
+{% endif %}
 
 <section>
     <h3>Reviews</h3>

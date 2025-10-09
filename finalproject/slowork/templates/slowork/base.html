@@ -12,6 +12,7 @@
     <nav>
         <a href="{% url 'home' %}">Jobs</a>
         {% if user.is_authenticated and user.is_employer %}
+            <a href="{% url 'employer_job_list' %}">My Jobs</a>
             <a href="{% url 'job_create' %}">Post a Job</a>
         {% endif %}
         {% if user.is_authenticated %}

@@ -1,0 +1,29 @@
+{% extends "slowork/base.html" %}
+
+{% block title %}My Jobs · Slowork{% endblock %}
+
+{% block content %}
+<section>
+    <h2>My Jobs</h2>
+    {% if jobs %}
+        <ul>
+            {% for job in jobs %}
+                <li>
+                    <h3><a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a></h3>
+                    <p>{{ job.description|truncatewords:30 }}</p>
+                    <p>
+                        <strong>Category:</strong> {{ job.category.name }} ·
+                        <strong>Status:</strong> {{ job.get_status_display }} ·
+                        <strong>Budget:</strong> {{ job.budget_min }} - {{ job.budget_max }}
+                    </p>
+                    <p>
+                        Posted {{ job.created_at|timesince }} ago
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not posted any jobs yet.</p>
+    {% endif %}
+</section>
+{% endblock %}

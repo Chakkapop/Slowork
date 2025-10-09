@@ -230,6 +230,13 @@ def job_detail(request, pk: int):
     }
     return render(request, "slowork/job_detail.html", context)
 
+@login_required
+def employer_job_list(request):
+    if not request.user.is_employer:
+        return HttpResponseForbidden("Only employers can access this page.")
+    jobs = Job.objects.filter(employer=request.user).order_by("-created_at")
+    context = {"jobs": jobs}
+    return render(request, "slowork/employer_job_list.html", context)
 
 @login_required
 def job_applications(request, pk: int):
