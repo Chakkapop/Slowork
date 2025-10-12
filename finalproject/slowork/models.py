@@ -235,6 +235,7 @@ class SubmissionFile(models.Model):
         on_delete=models.CASCADE,
         related_name="files",
     )
+    file = models.FileField(upload_to="file/",blank=True, null=True)
     file_url = models.URLField(max_length=500)
     original_name = models.CharField(max_length=255, blank=True, null=True)
     mime_type = models.CharField(max_length=100, blank=True, null=True)

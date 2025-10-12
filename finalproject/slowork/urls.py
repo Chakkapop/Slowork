@@ -21,6 +21,8 @@ urlpatterns = [
         name="application_create",
     ),
     path("my-jobs/", views.employer_job_list, name="employer_job_list"),
+    path("my-applications/", views.freelancer_application_list, name="freelancer_application_list"),
+    path("my-submissions/", views.freelancer_submission_list, name="freelancer_submission_list"),
     path(
         "applications/<int:application_id>/submit/",
         views.work_submission_create,

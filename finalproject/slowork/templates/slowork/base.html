@@ -15,6 +15,11 @@
             <a href="{% url 'employer_job_list' %}">My Jobs</a>
             <a href="{% url 'job_create' %}">Post a Job</a>
         {% endif %}
+        
+        {% if user.is_authenticated and user.is_freelancer %}
+            <a href="{% url 'freelancer_application_list' %}">My Applications</a>
+            <a href="{% url 'freelancer_submission_list' %}">My Submissions</a>
+        {% endif %}
         {% if user.is_authenticated %}
             <a href="{% url 'notifications' %}">Notifications {% with unread=user.unread_notifications_count %}{% if unread %}({{ unread }}){% endif %}{% endwith %}</a>
             <a href="{% url 'profile' %}">Profile</a>

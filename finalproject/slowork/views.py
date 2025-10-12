@@ -18,10 +18,11 @@ from .forms import (
     NotificationBulkUpdateForm,
     ProfileForm,
     ReviewForm,
+    SubmissionFileFormSet, # เพิ่ม import
     UserRegistrationForm,
     WorkSubmissionForm,
 )
-from .models import Application, Job, Notification, Review, User, WorkSubmission
+from .models import Application, Job, Notification, Review, SubmissionFile, User, WorkSubmission
 from .services import create_notification
 
 
@@ -84,7 +85,7 @@ def register(request):
             return redirect("home")
     else:
         form = UserRegistrationForm()
-    return render(request, "slowork/register.html", {"form": form})
+    return render(request, "registration/register.html", {"form": form})
 
 
 @login_required
@@ -378,18 +379,28 @@ def work_submission_create(request, application_id: int):
 
     if request.method == "POST":
         form = WorkSubmissionForm(request.POST)
-        if form.is_valid():
-            submission = form.save(commit=False)
-            submission.application = application
-            submission.job = job
-            submission.submitted_by = request.user
-            if application.submissions.filter(status=WorkSubmission.STATUS_CHANGES_REQUESTED).exists():
-                submission.status = WorkSubmission.STATUS_RESUBMITTED
-            else:
-                submission.status = WorkSubmission.STATUS_SUBMITTED
-            submission.save()
-            job.status = Job.STATUS_SUBMITTED
-            job.save(update_fields=["status", "updated_at"])
+        file_formset = SubmissionFileFormSet(request.POST, request.FILES, queryset=SubmissionFile.objects.none())
+
+        if form.is_valid() and file_formset.is_valid():
+            with transaction.atomic():
+                submission = form.save(commit=False)
+                submission.application = application
+                submission.job = job
+                submission.submitted_by = request.user
+                if application.submissions.filter(status=WorkSubmission.STATUS_CHANGES_REQUESTED).exists():
+                    submission.status = WorkSubmission.STATUS_RESUBMITTED
+                else:
+                    submission.status = WorkSubmission.STATUS_SUBMITTED
+                submission.save()
+
+                # Save uploaded files
+                for file_form in file_formset.cleaned_data:
+                    if file_form and file_form.get('file'):
+                        SubmissionFile.objects.create(submission=submission, file=file_form['file'])
+
+                job.status = Job.STATUS_SUBMITTED
+                job.save(update_fields=["status", "updated_at"])
+
             create_notification(
                 job.employer,
                 Notification.TYPE_STATUS,
@@ -402,10 +413,12 @@ def work_submission_create(request, application_id: int):
             return redirect("job_detail", pk=job.pk)
     else:
         form = WorkSubmissionForm()
+        file_formset = SubmissionFileFormSet(queryset=SubmissionFile.objects.none())
+
     return render(
         request,
         "slowork/worksubmission_form.html",
-        {"form": form, "application": application, "job": job},
+        {"form": form, "file_formset": file_formset, "application": application, "job": job},
     )
 
 
@@ -544,3 +557,21 @@ def notification_mark_read(request, pk: int):
     notification.save(update_fields=["is_read"])
     next_url = request.POST.get("next") or "notifications"
     return redirect(next_url)
+
+@login_required
+@permission_required("slowork.view_application", raise_exception=True)
+def freelancer_application_list(request):
+    if not request.user.is_freelancer:
+        return HttpResponseForbidden("Only freelancers can access this page.")
+    applications = Application.objects.filter(freelancer=request.user).select_related('job', 'job__category').order_by("-created_at")
+    context = {"applications": applications}
+    return render(request, "slowork/freelancer_application_list.html", context)
+
+@login_required
+@permission_required("slowork.view_worksubmission", raise_exception=True)
+def freelancer_submission_list(request):
+    if not request.user.is_freelancer:
+        return HttpResponseForbidden("Only freelancers can access this page.")
+    submissions = WorkSubmission.objects.filter(submitted_by=request.user).select_related('job').prefetch_related('files').order_by("-created_at")
+    context = {"submissions": submissions}
+    return render(request, "slowork/freelancer_submission_list.html", context)

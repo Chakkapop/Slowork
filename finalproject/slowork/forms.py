@@ -1,5 +1,6 @@
 ﻿from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import Group
 
 from .models import (
     Application,
@@ -8,6 +9,7 @@ from .models import (
     Review,
     User,
     WorkSubmission,
+    SubmissionFile,
 )
 
 
@@ -33,11 +35,19 @@ class UserRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"].lower()
-        user.role = self.cleaned_data["role"]
+        role = self.cleaned_data["role"]
+        user.role = role
         if commit:
             user.save()
+            try:
+                group = Group.objects.get(name=role)
+                user.groups.add(group)
+            except Group.DoesNotExist:
+                # หาก Group ยังไม่ได้ถูกสร้างใน Admin จะข้ามไปก่อน
+                # ควรสร้าง Group ไว้ล่วงหน้าเพื่อให้โค้ดส่วนนี้ทำงานได้
+                pass
         return user
-
+    
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -121,6 +131,19 @@ class WorkSubmissionForm(forms.ModelForm):
         widgets = {
             "text_notes": forms.Textarea(attrs={"rows": 4}),
         }
+
+
+class SubmissionFileForm(forms.ModelForm):
+    class Meta:
+        model = SubmissionFile
+        fields = ("file",)
+
+SubmissionFileFormSet = forms.modelformset_factory(
+    SubmissionFile,
+    form=SubmissionFileForm,
+    extra=1, 
+    can_delete=True 
+)
 
 
 class ReviewForm(forms.ModelForm):

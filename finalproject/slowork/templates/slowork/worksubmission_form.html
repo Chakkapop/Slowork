@@ -5,9 +5,17 @@
 {% block content %}
 <h2>Submit work for "{{ job.title }}"</h2>
 <p>Application accepted for {{ application.job.title }}.</p>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
+
+    <fieldset>
+        <legend>Attach Files</legend>
+        {{ file_formset.management_form }}
+        {% for form in file_formset %}
+            {{ form }}
+        {% endfor %}
+    </fieldset>
     <button type="submit">Submit work</button>
     <a href="{% url 'job_detail' job.pk %}">Cancel</a>
 </form>

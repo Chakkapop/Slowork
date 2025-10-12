@@ -1,0 +1,31 @@
+{% extends "slowork/base.html" %}
+
+{% block title %}My Applications · Slowork{% endblock %}
+
+{% block content %}
+<section>
+    <h2>My Applications</h2>
+    {% if applications %}
+        <ul>
+            {% for app in applications %}
+                <li>
+                    <h3><a href="{% url 'job_detail' app.job.pk %}">{{ app.job.title }}</a></h3>
+                    <p>
+                        <strong>Status:</strong> {{ app.get_status_display }} ·
+                        <strong>Employer:</strong> {{ app.job.employer.username }}
+                    </p>
+                    <p>
+                        <strong>Proposed Budget:</strong> {{ app.proposed_budget }} ·
+                        <strong>Proposed Days:</strong> {{ app.proposed_days }}
+                    </p>
+                    <p>
+                        Applied {{ app.created_at|timesince }} ago
+                    </p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>You have not applied to any jobs yet.</p>
+    {% endif %}
+</section>
+{% endblock %}
