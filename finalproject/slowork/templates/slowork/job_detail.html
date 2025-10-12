@@ -113,6 +113,17 @@
                     {% if submission.text_notes %}
                         <p>{{ submission.text_notes|linebreaks }}</p>
                     {% endif %}
+
+                    {% if submission.files.all %}
+                        <p><strong>Attached files:</strong></p>
+                        <ul>
+                            {% for file in submission.files.all %}
+                                <li>
+                                    <a href="{{ file.file.url }}" target="_blank" rel="noopener noreferrer">{{ file.file.url }}</a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
                     {% if user.is_authenticated and user == job.employer %}
                         {% if submission.status != submission.STATUS_APPROVED %}
                             <form method="post" action="{% url 'work_submission_update_status' submission.pk 'approve' %}" style="display:inline;">

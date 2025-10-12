@@ -217,7 +217,8 @@ def job_detail(request, pk: int):
         pk=pk,
     )
     applications = job.applications.select_related("freelancer").order_by("-created_at")
-    submissions = job.submissions.select_related("submitted_by").order_by("-created_at")
+    submissions = job.submissions.select_related("submitted_by").prefetch_related("files").order_by("-created_at")
+
     reviews = job.reviews.select_related("reviewer", "reviewee").order_by("-created_at")
 
     user_application = None
