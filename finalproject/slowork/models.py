@@ -24,6 +24,7 @@ class User(AbstractUser):
     rating_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    profile_picture = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
 
     REQUIRED_FIELDS = ["email"]
 
@@ -128,6 +129,7 @@ class Job(models.Model):
         blank=True,
         related_name="awarded_job",
     )
+    image = models.ImageField(upload_to='job_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

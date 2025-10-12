@@ -42,7 +42,7 @@ class UserRegistrationForm(UserCreationForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "phone", "location_city")
+        fields = ("first_name", "last_name", "phone", "location_city", "profile_picture")
 
 
 class JobForm(forms.ModelForm):
@@ -61,6 +61,7 @@ class JobForm(forms.ModelForm):
             "budget_max",
             "location_city",
             "deadline_date",
+            "image",
         )
 
     def __init__(self, *args, **kwargs):

@@ -34,6 +34,9 @@
             {% for job in jobs %}
                 <li>
                     <h3><a href="{% url 'job_detail' job.pk %}">{{ job.title }}</a></h3>
+                    {% if job.image %}
+                        <img src="{{ job.image.url }}" alt="Image for {{ job.title }}" style="max-width: 100%; height: auto;">
+                    {% endif %}
                     <p>{{ job.description|truncatewords:30 }}</p>
                     <p>
                         <strong>Category:</strong> {{ job.category.name }} ·

@@ -10,7 +10,7 @@
     <p><strong>Rating:</strong> ยังไม่มีรีวิว</p>
 {% endif %}
 <p><a href="{% url 'profile_view' request.user.pk %}">View public profile</a></p>
-<form method="post">
+<form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <button type="submit">Save changes</button>

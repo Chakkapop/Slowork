@@ -5,6 +5,9 @@
 {% block content %}
 <article>
     <h2>{{ job.title }}</h2>
+    {% if job.image %}
+        <img src="{{ job.image.url }}" alt="Image for {{ job.title }}" style="max-width: 100%; height: auto;">
+    {% endif %}
     <p>{{ job.description|linebreaks }}</p>
     <p>
         <strong>Category:</strong> {{ job.category.name }} -

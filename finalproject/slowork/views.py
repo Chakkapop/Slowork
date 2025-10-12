@@ -1,8 +1,9 @@
-﻿from datetime import timedelta
+﻿# slowork/views.py
 
+from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.db import transaction
 from django.db.models import Count, Q
 from django.http import HttpResponseForbidden
@@ -87,9 +88,10 @@ def register(request):
 
 
 @login_required
+@permission_required("slowork.change_user", raise_exception=True)
 def profile_edit(request):
     if request.method == "POST":
-        form = ProfileForm(request.POST, instance=request.user)
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Profile updated successfully.")
@@ -156,12 +158,13 @@ def profile_view(request, user_id: int):
 
 
 @login_required
+@permission_required("slowork.add_job", raise_exception=True)
 def job_create(request):
     if not request.user.is_employer:
         return HttpResponseForbidden("Only employers can post jobs.")
 
     if request.method == "POST":
-        form = JobForm(request.POST)
+        form = JobForm(request.POST, request.FILES)
         if form.is_valid():
             job = form.save(commit=False)
             job.employer = request.user
@@ -175,13 +178,14 @@ def job_create(request):
 
 
 @login_required
+@permission_required("slowork.change_job", raise_exception=True)
 def job_update(request, pk: int):
     job = get_object_or_404(Job, pk=pk)
     if job.employer != request.user and not request.user.is_market_admin:
         return HttpResponseForbidden("You do not have permission to edit this job.")
 
     if request.method == "POST":
-        form = JobForm(request.POST, instance=job)
+        form = JobForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
             form.save()
             messages.success(request, "Job updated successfully.")
@@ -191,7 +195,9 @@ def job_update(request, pk: int):
     return render(request, "slowork/job_form.html", {"form": form, "is_edit": True, "job": job})
 
 
+
 @login_required
+@permission_required("slowork.delete_job", raise_exception=True)
 def job_delete(request, pk: int):
     job = get_object_or_404(Job, pk=pk)
     if job.employer != request.user and not request.user.is_market_admin:
@@ -231,6 +237,7 @@ def job_detail(request, pk: int):
     return render(request, "slowork/job_detail.html", context)
 
 @login_required
+@permission_required("slowork.view_job", raise_exception=True)
 def employer_job_list(request):
     if not request.user.is_employer:
         return HttpResponseForbidden("Only employers can access this page.")
@@ -239,6 +246,7 @@ def employer_job_list(request):
     return render(request, "slowork/employer_job_list.html", context)
 
 @login_required
+@permission_required("slowork.view_application", raise_exception=True)
 def job_applications(request, pk: int):
     job = get_object_or_404(Job.objects.select_related("employer"), pk=pk)
     if job.employer != request.user and not request.user.is_market_admin:
@@ -252,6 +260,7 @@ def job_applications(request, pk: int):
 
 
 @login_required
+@permission_required("slowork.add_application", raise_exception=True)
 def application_create(request, job_id: int):
     job = get_object_or_404(Job, pk=job_id)
     if not request.user.is_freelancer:
@@ -290,6 +299,7 @@ def application_create(request, job_id: int):
 
 @login_required
 @require_POST
+@permission_required("slowork.change_application", raise_exception=True)
 def application_update_status(request, pk: int, action: str):
     application = get_object_or_404(
         Application.objects.select_related("job", "freelancer"),
@@ -334,6 +344,7 @@ def application_update_status(request, pk: int, action: str):
 
 @login_required
 @require_POST
+@permission_required("slowork.change_job", raise_exception=True)
 def job_mark_completed(request, pk: int):
     job = get_object_or_404(Job, pk=pk, employer=request.user)
     job.status = Job.STATUS_COMPLETED
@@ -352,6 +363,7 @@ def job_mark_completed(request, pk: int):
 
 
 @login_required
+@permission_required("slowork.add_worksubmission", raise_exception=True)
 def work_submission_create(request, application_id: int):
     application = get_object_or_404(
         Application.objects.select_related("job", "freelancer"),
@@ -399,6 +411,7 @@ def work_submission_create(request, application_id: int):
 
 @login_required
 @require_POST
+@permission_required("slowork.change_worksubmission", raise_exception=True)
 def work_submission_update_status(request, submission_id: int, action: str):
     submission = get_object_or_404(
         WorkSubmission.objects.select_related("job", "submitted_by"),
@@ -440,6 +453,7 @@ def work_submission_update_status(request, submission_id: int, action: str):
 
 
 @login_required
+@permission_required("slowork.add_review", raise_exception=True)
 def review_create(request, job_id: int, target: str):
     job = get_object_or_404(
         Job.objects.select_related("employer", "selected_application__freelancer"),
@@ -503,6 +517,7 @@ def review_create(request, job_id: int, target: str):
 
 
 @login_required
+@permission_required("slowork.view_notification", raise_exception=True)
 def notification_list(request):
     notifications = request.user.notifications.order_by("-created_at")
     if request.method == "POST":
@@ -522,6 +537,7 @@ def notification_list(request):
 
 @login_required
 @require_POST
+@permission_required("slowork.change_notification", raise_exception=True)
 def notification_mark_read(request, pk: int):
     notification = get_object_or_404(Notification, pk=pk, user=request.user)
     notification.is_read = True
