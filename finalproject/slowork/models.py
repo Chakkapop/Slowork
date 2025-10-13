@@ -50,8 +50,6 @@ class User(AbstractUser):
 
     @property
     def unread_notifications_count(self) -> int:
-        if not self.pk:
-            return 0
         return self.notifications.filter(is_read=False).count()
 
 

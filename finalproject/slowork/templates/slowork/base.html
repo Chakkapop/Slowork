@@ -11,12 +11,12 @@
     <h1><a href="{% url 'home' %}">Slowork</a></h1>
     <nav>
         <a href="{% url 'home' %}">Jobs</a>
-        {% if user.is_authenticated and user.is_employer %}
+        {% if user.is_employer %}
             <a href="{% url 'employer_job_list' %}">My Jobs</a>
             <a href="{% url 'job_create' %}">Post a Job</a>
         {% endif %}
         
-        {% if user.is_authenticated and user.is_freelancer %}
+        {% if user.is_freelancer %}
             <a href="{% url 'freelancer_application_list' %}">My Applications</a>
             <a href="{% url 'freelancer_submission_list' %}">My Submissions</a>
         {% endif %}
@@ -34,13 +34,6 @@
     </nav>
 </header>
 <main>
-    {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-                <li class="{{ message.tags }}">{{ message }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
     {% block content %}{% endblock %}
 </main>
 <footer>
