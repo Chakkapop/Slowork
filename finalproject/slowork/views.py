@@ -28,9 +28,7 @@ from .services import create_notification
 
 def home(request):
     jobs = (
-        Job.objects.select_related("employer", "category")
-        .annotate(application_total=Count("applications"))
-        .order_by("-created_at")
+        Job.objects.select_related("employer", "category").order_by("-created_at")
     )
     filter_form = JobFilterForm(request.GET or None)
     if filter_form.is_valid():
@@ -58,16 +56,9 @@ def home(request):
     else:
         filter_form = JobFilterForm()
 
-    user_applied_job_ids: set[int] = set()
-    if request.user.is_authenticated and request.user.is_freelancer:
-        user_applied_job_ids = set(
-            request.user.applications.values_list("job_id", flat=True)
-        )
-
     context = {
         "jobs": jobs,
         "filter_form": filter_form,
-        "user_applied_job_ids": user_applied_job_ids,
     }
     return render(request, "slowork/job_list.html", context)
 
@@ -161,9 +152,6 @@ def profile_view(request, user_id: int):
 @login_required
 @permission_required("slowork.add_job", raise_exception=True)
 def job_create(request):
-    if not request.user.is_employer:
-        return HttpResponseForbidden("Only employers can post jobs.")
-
     if request.method == "POST":
         form = JobForm(request.POST, request.FILES)
         if form.is_valid():
@@ -182,9 +170,6 @@ def job_create(request):
 @permission_required("slowork.change_job", raise_exception=True)
 def job_update(request, pk: int):
     job = get_object_or_404(Job, pk=pk)
-    if job.employer != request.user and not request.user.is_market_admin:
-        return HttpResponseForbidden("You do not have permission to edit this job.")
-
     if request.method == "POST":
         form = JobForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
@@ -201,9 +186,6 @@ def job_update(request, pk: int):
 @permission_required("slowork.delete_job", raise_exception=True)
 def job_delete(request, pk: int):
     job = get_object_or_404(Job, pk=pk)
-    if job.employer != request.user and not request.user.is_market_admin:
-        return HttpResponseForbidden("You do not have permission to delete this job.")
-
     if request.method == "POST":
         job.delete()
         messages.success(request, "Job removed successfully.")
@@ -241,8 +223,6 @@ def job_detail(request, pk: int):
 @login_required
 @permission_required("slowork.view_job", raise_exception=True)
 def employer_job_list(request):
-    if not request.user.is_employer:
-        return HttpResponseForbidden("Only employers can access this page.")
     jobs = Job.objects.filter(employer=request.user).order_by("-created_at")
     context = {"jobs": jobs}
     return render(request, "slowork/employer_job_list.html", context)
@@ -251,8 +231,6 @@ def employer_job_list(request):
 @permission_required("slowork.view_application", raise_exception=True)
 def job_applications(request, pk: int):
     job = get_object_or_404(Job.objects.select_related("employer"), pk=pk)
-    if job.employer != request.user and not request.user.is_market_admin:
-        return HttpResponseForbidden("You do not have permission to view applications for this job.")
     applications = job.applications.select_related("freelancer").order_by("-created_at")
     return render(
         request,
@@ -265,8 +243,6 @@ def job_applications(request, pk: int):
 @permission_required("slowork.add_application", raise_exception=True)
 def application_create(request, job_id: int):
     job = get_object_or_404(Job, pk=job_id)
-    if not request.user.is_freelancer:
-        return HttpResponseForbidden("Only freelancers can apply for jobs.")
     if job.employer_id == request.user.id:
         messages.error(request, "You cannot apply to your own job.")
         return redirect("job_detail", pk=job.pk)
