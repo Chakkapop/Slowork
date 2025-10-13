@@ -1,5 +1,7 @@
 ﻿# slowork/views.py
-
+from collections.abc import Iterable
+from typing import Optional
+from django.db import transaction
 from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import login
@@ -22,9 +24,7 @@ from .forms import (
     UserRegistrationForm,
     WorkSubmissionForm,
 )
-from .models import Application, Job, Notification, Review, SubmissionFile, User, WorkSubmission
-from .services import create_notification
-
+from .models import *
 
 def home(request):
     jobs = (
@@ -238,6 +238,27 @@ def job_applications(request, pk: int):
         {"job": job, "applications": applications},
     )
 
+def create_notification(
+    user: Optional[User],
+    notif_type: str,
+    title: str,
+    message: str,
+    *,
+    ref_type: str | None = None,
+    ref_id: int | None = None,
+) -> Notification | None:
+    if user is None:
+        return None
+    with transaction.atomic():
+        notification = Notification.objects.create(
+            user=user,
+            type=notif_type,
+            title=title,
+            message=message,
+            ref_type=ref_type,
+            ref_id=ref_id,
+        )
+    return notification
 
 @login_required
 @permission_required("slowork.add_application", raise_exception=True)
