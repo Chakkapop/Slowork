@@ -138,10 +138,6 @@ class Job(models.Model):
     def __str__(self) -> str:
         return self.title
 
-    def clean(self):
-        if self.budget_min and self.budget_max and self.budget_min > self.budget_max:
-            raise ValidationError("Minimum budget cannot exceed maximum budget.")
-
 
 class Application(models.Model):
     STATUS_PENDING = "pending"
@@ -222,10 +218,6 @@ class WorkSubmission(models.Model):
 
     def __str__(self) -> str:
         return f"Submission {self.pk} for {self.job.title}"
-
-    def clean(self):
-        if self.application_id and self.job_id and self.application.job_id != self.job_id:
-            raise ValidationError("Submission job must match the application job.")
 
 
 class SubmissionFile(models.Model):

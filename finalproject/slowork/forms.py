@@ -73,12 +73,13 @@ class JobForm(forms.ModelForm):
         self.fields["description"].widget = forms.Textarea(attrs={"rows": 5})
 
     def clean(self):
-        cleaned = super().clean()
-        budget_min = cleaned.get("budget_min")
-        budget_max = cleaned.get("budget_max")
+        cleaned_data = super().clean()
+        budget_min = cleaned_data.get("budget_min")
+        budget_max = cleaned_data.get("budget_max")
         if budget_min is not None and budget_max is not None and budget_min > budget_max:
             raise forms.ValidationError("Minimum budget cannot be higher than maximum budget.")
-        return cleaned
+        return cleaned_data
+
 
 
 class JobFilterForm(forms.Form):
