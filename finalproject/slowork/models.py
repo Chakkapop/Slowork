@@ -1,5 +1,4 @@
-﻿from django.conf import settings
-from django.contrib.auth.models import AbstractUser
+﻿from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -96,7 +95,7 @@ class Job(models.Model):
     ]
 
     employer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="jobs_posted",
         limit_choices_to={"role": User.ROLE_EMPLOYER},
@@ -155,7 +154,7 @@ class Application(models.Model):
         related_name="applications",
     )
     freelancer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="applications",
         limit_choices_to={"role": User.ROLE_FREELANCER},
@@ -204,7 +203,7 @@ class WorkSubmission(models.Model):
         related_name="submissions",
     )
     submitted_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="work_submissions",
     )
@@ -247,12 +246,12 @@ class Review(models.Model):
         related_name="reviews",
     )
     reviewer = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="reviews_written",
     )
     reviewee = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="reviews_received",
     )
@@ -305,7 +304,7 @@ class Notification(models.Model):
     ]
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
         related_name="notifications",
     )
