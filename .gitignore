@@ -1,2 +1,3 @@
 finalproject/finalproject/settings.py
-/__pycache__/*
+finalproject/slowork/__pycache__
+finalproject\slowork\migrations
