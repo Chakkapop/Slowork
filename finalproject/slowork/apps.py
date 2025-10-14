@@ -6,4 +6,4 @@ class SloworkConfig(AppConfig):
     name = "slowork"
 
     def ready(self) -> None:
-        from . import signals
+        pass

@@ -4,7 +4,8 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils.text import slugify
-
+from decimal import Decimal, ROUND_HALF_UP
+from django.db.models import Avg, Count
 
 class User(AbstractUser):
     ROLE_EMPLOYER = "employer"
@@ -281,6 +282,22 @@ class Review(models.Model):
 
     def __str__(self) -> str:
         return f"Review {self.rating}/5 for {self.reviewee.username}"
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        user = self.reviewee
+        stats = user.reviews_received.aggregate(avg=Avg("rating"), count=Count("id"))
+        count = stats.get("count") or 0
+        if count:
+            user.rating_count = count
+            user.rating_avg = Decimal(stats.get("avg") or 0).quantize(
+                Decimal("0.01"), rounding=ROUND_HALF_UP
+            )
+        else:
+            user.rating_count = 0
+            user.rating_avg = 0
+        user.save(update_fields=["rating_avg", "rating_count", "updated_at"])
 
 
 class Notification(models.Model):
