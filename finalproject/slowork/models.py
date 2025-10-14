@@ -208,6 +208,7 @@ class WorkSubmission(models.Model):
         related_name="work_submissions",
     )
     text_notes = models.TextField(blank=True, null=True)
+    change_request_reason = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default=STATUS_DRAFT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

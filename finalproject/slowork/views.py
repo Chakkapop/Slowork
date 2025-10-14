@@ -432,7 +432,8 @@ def work_submission_update_status(request, submission_id: int, action: str):
 
     if action == "approve":
         submission.status = WorkSubmission.STATUS_APPROVED
-        submission.save(update_fields=["status", "updated_at"])
+        submission.change_request_reason = None
+        submission.save(update_fields=["status", "change_request_reason", "updated_at"])
         submission.job.status = Job.STATUS_COMPLETED
         submission.job.save(update_fields=["status", "updated_at"])
         create_notification(
@@ -445,15 +446,21 @@ def work_submission_update_status(request, submission_id: int, action: str):
         )
         messages.success(request, "Submission approved and job marked completed.")
     elif action == "request_changes":
+        reason = request.POST.get("change_reason", "").strip()
+        if not reason:
+            messages.error(request, "Please provide a reason for requesting changes.")
+            return redirect("job_detail", pk=submission.job.pk)
         submission.status = WorkSubmission.STATUS_CHANGES_REQUESTED
-        submission.save(update_fields=["status", "updated_at"])
+        submission.change_request_reason = reason
+        submission.save(update_fields=["status", "change_request_reason", "updated_at"])
         submission.job.status = Job.STATUS_IN_PROGRESS
         submission.job.save(update_fields=["status", "updated_at"])
+        reason_message = f"Reason: {reason}"
         create_notification(
             submission.submitted_by,
             Notification.TYPE_STATUS,
             "Changes requested",
-            f"Changes were requested for '{submission.job.title}'.",
+            f"Changes were requested for '{submission.job.title}'. {reason_message}",
             ref_type="submission",
             ref_id=submission.pk,
         )

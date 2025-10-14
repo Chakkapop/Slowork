@@ -113,6 +113,9 @@
                     {% if submission.text_notes %}
                         <p>{{ submission.text_notes|linebreaks }}</p>
                     {% endif %}
+                    {% if submission.change_request_reason %}
+                        <p><strong>Change request reason:</strong> {{ submission.change_request_reason|linebreaks }}</p>
+                    {% endif %}
 
                     {% if submission.files.all %}
                         <p><strong>Attached files:</strong></p>
@@ -132,8 +135,9 @@
                             </form>
                         {% endif %}
                         {% if submission.status != submission.STATUS_CHANGES_REQUESTED %}
-                            <form method="post" action="{% url 'work_submission_update_status' submission.pk 'request_changes' %}" style="display:inline;">
+                            <form method="post" action="{% url 'work_submission_update_status' submission.pk 'request_changes' %}" style="display:inline-block; margin-top: 0.5rem;">
                                 {% csrf_token %}
+                                <textarea name="change_reason" rows="3" placeholder="Explain what needs to be changed" required></textarea>
                                 <button type="submit">Request changes</button>
                             </form>
                         {% endif %}
