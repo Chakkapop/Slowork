@@ -48,9 +48,7 @@
                         {% if job.location_city %} · {{ job.location_city }}{% endif %}
                     </p>
                     {% if user.is_authenticated and user.is_freelancer %}
-                        {% if job.pk in user_applied_job_ids %}
-                            <em>You have applied</em>
-                        {% elif job.status == job.STATUS_OPEN %}
+                        {% if job.status == job.STATUS_OPEN %}
                             <a class="button" href="{% url 'application_create' job.pk %}">Apply now</a>
                         {% endif %}
                     {% endif %}
