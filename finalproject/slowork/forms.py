@@ -45,8 +45,11 @@ class UserRegistrationForm(UserCreationForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ("first_name", "last_name", "phone", "location_city", "profile_picture")
-
+        fields = ("first_name", "last_name", "phone", "location_city", "profile_picture", "bio", "skills", "portfolio_url")
+        widgets = {
+            'bio': forms.Textarea(attrs={'rows': 4}),
+            'skills': forms.Textarea(attrs={'rows': 2}),
+        }
 
 class JobForm(forms.ModelForm):
     deadline_date = forms.DateField(
