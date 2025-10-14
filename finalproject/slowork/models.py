@@ -103,9 +103,8 @@ class Job(models.Model):
         related_name="jobs_posted",
         limit_choices_to={"role": User.ROLE_EMPLOYER},
     )
-    category = models.ForeignKey(
+    category  = models.ManyToManyField(
         JobCategory,
-        on_delete=models.PROTECT,
         related_name="jobs",
     )
     title = models.CharField(max_length=255)

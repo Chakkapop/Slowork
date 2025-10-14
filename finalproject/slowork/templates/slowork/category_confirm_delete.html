@@ -1,0 +1,14 @@
+{% extends "slowork/base.html" %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+  <h2>Delete Category</h2>
+  <p>Are you sure you want to delete the category "{{ category.name }}"?</p>
+  <p><strong>Warning:</strong> This action cannot be undone.</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, delete</button>
+    <a href="{% url 'category_list' %}">Cancel</a>
+  </form>
+{% endblock %}

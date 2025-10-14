@@ -50,6 +50,14 @@ class ProfileForm(forms.ModelForm):
             'bio': forms.Textarea(attrs={'rows': 4}),
             'skills': forms.Textarea(attrs={'rows': 2}),
         }
+    def clean_profile_picture(self):
+        picture = self.cleaned_data.get('profile_picture', False)
+        if picture:
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            ext = os.path.splitext(picture.name)[1].lower()
+            if ext not in allowed_extensions:
+                raise forms.ValidationError(f"ไฟล์รูปภาพไม่ถูกต้อง, อนุญาตเฉพาะ: {', '.join(allowed_extensions)}")
+        return picture
 
 class JobForm(forms.ModelForm):
     deadline_date = forms.DateField(
@@ -69,10 +77,11 @@ class JobForm(forms.ModelForm):
             "deadline_date",
             "image",
         )
-
+    widgets = {
+            'category': forms.CheckboxSelectMultiple,
+        }
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["category"].queryset = JobCategory.objects.order_by("name")
         self.fields["description"].widget = forms.Textarea(attrs={"rows": 5})
 
     def clean(self):
@@ -82,6 +91,15 @@ class JobForm(forms.ModelForm):
         if budget_min is not None and budget_max is not None and budget_min > budget_max:
             raise forms.ValidationError("Minimum budget cannot be higher than maximum budget.")
         return cleaned_data
+    
+    def clean_image(self):
+        image = self.cleaned_data.get('image', False)
+        if image:
+            allowed_extensions = ['.jpg', '.jpeg', '.png', '.webp']
+            ext = os.path.splitext(image.name)[1].lower()
+            if ext not in allowed_extensions:
+                raise forms.ValidationError(f"ไฟล์รูปภาพไม่ถูกต้อง, อนุญาตเฉพาะ: {', '.join(allowed_extensions)}")
+        return image
 
 
 
@@ -174,3 +192,8 @@ class ReviewForm(forms.ModelForm):
 
 class NotificationBulkUpdateForm(forms.Form):
     mark_all_read = forms.BooleanField(required=False, initial=True)
+
+class JobCategoryForm(forms.ModelForm):
+    class Meta:
+        model = JobCategory
+        fields = ("name",)

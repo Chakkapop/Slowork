@@ -1,3 +1,4 @@
 finalproject/finalproject/settings.py
 finalproject/slowork/__pycache__
 finalproject\slowork\migrations
+*.pyc
