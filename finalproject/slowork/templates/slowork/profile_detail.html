@@ -17,6 +17,24 @@
 {% if profile_user.phone %}
     <p><strong>Phone:</strong> {{ profile_user.phone }}</p>
 {% endif %}
+
+{% if profile_user.bio %}
+    <section>
+        <h3>About Me</h3>
+        <p>{{ profile_user.bio|linebreaks }}</p>
+    </section>
+{% endif %}
+
+{% if profile_user.skills %}
+    <section>
+        <h3>Skills</h3>
+        <p>{{ profile_user.skills }}</p>
+    </section>
+{% endif %}
+
+{% if profile_user.portfolio_url %}
+    <p><strong>Portfolio:</strong> <a href="{{ profile_user.portfolio_url }}" target="_blank" rel="noopener noreferrer">{{ profile_user.portfolio_url }}</a></p>
+{% endif %}
 {% if profile_user.rating_count %}
     <p><strong>Rating:</strong> {{ profile_user.rating_avg }} / 5 ({{ profile_user.rating_count }} reviews)</p>
 {% else %}
