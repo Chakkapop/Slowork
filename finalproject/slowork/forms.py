@@ -1,7 +1,7 @@
 ﻿from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import Group
-
+import os
 from .models import (
     Application,
     Job,
@@ -26,11 +26,6 @@ class UserRegistrationForm(UserCreationForm):
         model = User
         fields = ("username", "email", "first_name", "last_name", "role")
 
-    def clean_role(self):
-        role = self.cleaned_data["role"]
-        if role not in {User.ROLE_EMPLOYER, User.ROLE_FREELANCER}:
-            raise forms.ValidationError("Please choose a valid role.")
-        return role
 
     def save(self, commit=True):
         user = super().save(commit=False)
@@ -43,8 +38,6 @@ class UserRegistrationForm(UserCreationForm):
                 group = Group.objects.get(name=role)
                 user.groups.add(group)
             except Group.DoesNotExist:
-                # หาก Group ยังไม่ได้ถูกสร้างใน Admin จะข้ามไปก่อน
-                # ควรสร้าง Group ไว้ล่วงหน้าเพื่อให้โค้ดส่วนนี้ทำงานได้
                 pass
         return user
     
@@ -137,6 +130,20 @@ class SubmissionFileForm(forms.ModelForm):
     class Meta:
         model = SubmissionFile
         fields = ("file",)
+
+    def clean_file(self):
+        file = self.cleaned_data.get('file', False)
+        if file:
+            file_size = file.size
+            if file_size > 5 * 1024 * 1024: # 5 MB
+                raise forms.ValidationError("ไฟล์มีขนาดใหญ่เกินไป (สูงสุด 5MB)")
+
+            allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.zip', '.rar']
+            ext = os.path.splitext(file.name)[1].lower()
+            if ext not in allowed_extensions:
+                raise forms.ValidationError(f"ไม่อนุญาตให้อัปโหลดไฟล์ชนิด {ext}, อนุญาตเฉพาะ: {', '.join(allowed_extensions)}")
+
+            return file
 
 SubmissionFileFormSet = forms.modelformset_factory(
     SubmissionFile,

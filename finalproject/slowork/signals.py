@@ -9,7 +9,6 @@ from .models import Review
 
 @receiver(post_save, sender=Review)
 def update_reviewee_rating(sender, instance: Review, **_kwargs) -> None:
-    """Recalculate the aggregate rating whenever a review is saved."""
     user = instance.reviewee
     stats = user.reviews_received.aggregate(avg=Avg("rating"), count=Count("id"))
     count = stats.get("count") or 0

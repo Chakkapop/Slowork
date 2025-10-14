@@ -4,6 +4,11 @@
 
 {% block content %}
 <h2>Your Profile</h2>
+
+{% if request.user.profile_picture %}
+    <p><strong>Current Picture:</strong></p>
+    <img src="{{ request.user.profile_picture.url }}" alt="Your current profile picture" width="150">
+{% endif %}
 {% if request.user.rating_count %}
     <p><strong>Rating:</strong> {{ request.user.rating_avg }} / 5 ({{ request.user.rating_count }} reviews)</p>
 {% else %}
