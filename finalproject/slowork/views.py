@@ -47,12 +47,9 @@ def home(request):
             jobs = jobs.filter(status=status)
         posted = filter_form.cleaned_data["posted"]
         if posted:
-            try:
                 days = int(posted)
                 cutoff = timezone.now() - timedelta(days=days)
                 jobs = jobs.filter(created_at__gte=cutoff)
-            except ValueError:
-                pass
     else:
         filter_form = JobFilterForm()
 
