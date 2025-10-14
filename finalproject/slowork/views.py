@@ -17,6 +17,7 @@ from .forms import (
     ApplicationForm,
     JobFilterForm,
     JobForm,
+    JobCategoryForm,
     NotificationBulkUpdateForm,
     ProfileForm,
     ReviewForm,
@@ -28,7 +29,7 @@ from .models import *
 
 def home(request):
     jobs = (
-        Job.objects.select_related("employer", "category").order_by("-created_at")
+        Job.objects.select_related("employer").prefetch_related("category").order_by("-created_at")
     )
     filter_form = JobFilterForm(request.GET or None)
     if filter_form.is_valid():
@@ -55,7 +56,7 @@ def home(request):
                 pass
     else:
         filter_form = JobFilterForm()
-
+        
     context = {
         "jobs": jobs,
         "filter_form": filter_form,
@@ -139,7 +140,7 @@ def profile_view(request, user_id: int):
             )
             if pending_review_jobs:
                 review_target = "employer"
-
+    
     context = {
         "profile_user": profile_user,
         "reviews": reviews,
@@ -155,10 +156,16 @@ def job_create(request):
     if request.method == "POST":
         form = JobForm(request.POST, request.FILES)
         if form.is_valid():
+            selected_categories = form.cleaned_data.get('category')
+
             job = form.save(commit=False)
             job.employer = request.user
             job.status = Job.STATUS_OPEN
             job.save()
+
+            if selected_categories:
+                job.category.add(*selected_categories) # เครื่องหมาย * คือการแตก list ออกเป็น item ย่อยๆ
+
             messages.success(request, "Job posted successfully.")
             return redirect("job_detail", pk=job.pk)
     else:
@@ -173,7 +180,11 @@ def job_update(request, pk: int):
     if request.method == "POST":
         form = JobForm(request.POST, request.FILES, instance=job)
         if form.is_valid():
+            selected_categories = form.cleaned_data.get('category')
+
             form.save()
+            if selected_categories:
+                job.category.add(*selected_categories)
             messages.success(request, "Job updated successfully.")
             return redirect("job_detail", pk=job.pk)
     else:
@@ -195,7 +206,7 @@ def job_delete(request, pk: int):
 
 def job_detail(request, pk: int):
     job = get_object_or_404(
-        Job.objects.select_related("employer", "category", "selected_application"),
+        Job.objects.select_related("employer", "selected_application").prefetch_related("category"),
         pk=pk,
     )
     applications = job.applications.select_related("freelancer").order_by("-created_at")
@@ -568,9 +579,10 @@ def notification_mark_read(request, pk: int):
 def freelancer_application_list(request):
     if not request.user.is_freelancer:
         return HttpResponseForbidden("Only freelancers can access this page.")
-    applications = Application.objects.filter(freelancer=request.user).select_related('job', 'job__category').order_by("-created_at")
+    applications = Application.objects.filter(freelancer=request.user).select_related('job').prefetch_related('job__category').order_by("-created_at")
     context = {"applications": applications}
     return render(request, "slowork/freelancer_application_list.html", context)
+
 
 @login_required
 @permission_required("slowork.view_worksubmission", raise_exception=True)
@@ -580,3 +592,56 @@ def freelancer_submission_list(request):
     submissions = WorkSubmission.objects.filter(submitted_by=request.user).select_related('job').prefetch_related('files').order_by("-created_at")
     context = {"submissions": submissions}
     return render(request, "slowork/freelancer_submission_list.html", context)
+
+@login_required
+@permission_required("slowork.view_jobcategory", raise_exception=True)
+def category_list(request):
+    """แสดงรายการ Category ทั้งหมด"""
+    categories = JobCategory.objects.all().order_by("name")
+    return render(request, "slowork/category_list.html", {"categories": categories})
+
+
+@login_required
+@permission_required("slowork.add_jobcategory", raise_exception=True)
+def category_create(request):
+    """สร้าง Category ใหม่"""
+    if request.method == "POST":
+        form = JobCategoryForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category created successfully.")
+            return redirect("category_list")
+    else:
+        form = JobCategoryForm()
+    return render(request, "slowork/category_form.html", {"form": form})
+
+
+@login_required
+@permission_required("slowork.change_jobcategory", raise_exception=True)
+def category_update(request, pk: int):
+    """แก้ไข Category ที่มีอยู่"""
+    category = get_object_or_404(JobCategory, pk=pk)
+    if request.method == "POST":
+        form = JobCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Category updated successfully.")
+            return redirect("category_list")
+    else:
+        form = JobCategoryForm(instance=category)
+    return render(request, "slowork/category_form.html", {"form": form, "category": category})
+
+
+@login_required
+@permission_required("slowork.delete_jobcategory", raise_exception=True)
+def category_delete(request, pk: int):
+    """ลบ Category"""
+    category = get_object_or_404(JobCategory, pk=pk)
+    if request.method == "POST":
+        try:
+            category.delete()
+            messages.success(request, "Category deleted successfully.")
+        except models.ProtectedError:
+            messages.error(request, "Cannot delete this category because it is being used by one or more jobs.")
+        return redirect("category_list")
+    return render(request, "slowork/category_confirm_delete.html", {"category": category})

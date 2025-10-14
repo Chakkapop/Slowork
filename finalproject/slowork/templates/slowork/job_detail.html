@@ -10,7 +10,10 @@
     {% endif %}
     <p>{{ job.description|linebreaks }}</p>
     <p>
-        <strong>Category:</strong> {{ job.category.name }} -
+        <strong>Categories:</strong>
+        {% for cat in job.category.all %}
+            {{ cat.name }}{% if not forloop.last %}, {% endif %}
+        {% endfor %} -
         <strong>Status:</strong> {{ job.get_status_display }} -
         <strong>Budget:</strong> {{ job.budget_min }} - {{ job.budget_max }}
     </p>

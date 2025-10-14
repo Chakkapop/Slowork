@@ -20,6 +20,9 @@
             <a href="{% url 'freelancer_application_list' %}">My Applications</a>
             <a href="{% url 'freelancer_submission_list' %}">My Submissions</a>
         {% endif %}
+        {% if user.is_staff %}
+            <a href="{% url 'category_list' %}">Manage Categories</a>
+        {% endif %}
         {% if user.is_authenticated %}
             <a href="{% url 'notifications' %}">Notifications {% with unread=user.unread_notifications_count %}{% if unread %}({{ unread }}){% endif %}{% endwith %}</a>
             <a href="{% url 'profile' %}">Profile</a>

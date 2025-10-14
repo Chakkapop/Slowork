@@ -53,13 +53,19 @@ class ApplicationInline(admin.TabularInline):
 
 @admin.register(Job)
 class JobAdmin(admin.ModelAdmin):
-    list_display = ("title", "employer", "category", "status", "deadline_date", "created_at")
+    list_display = ("title", "employer", "display_categories", "status", "deadline_date", "created_at")
     list_filter = ("status", "category")
     search_fields = ("title", "description", "location_city")
     autocomplete_fields = ("employer", "category", "selected_application")
+    
     inlines = [ApplicationInline]
     readonly_fields = ("created_at", "updated_at")
 
+    # 3. สร้างฟังก์ชันเพื่อแสดงผลโดยอ้างอิงจาก 'obj.category.all()'
+    @admin.display(description='Categories')
+    def display_categories(self, obj):
+        """แสดง Categories ทั้งหมดเป็นข้อความ"""
+        return ", ".join([cat.name for cat in obj.category.all()])
 
 @admin.register(Application)
 class ApplicationAdmin(admin.ModelAdmin):

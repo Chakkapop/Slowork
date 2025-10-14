@@ -1,0 +1,32 @@
+{% extends "slowork/base.html" %}
+
+{% block title %}Manage Categories{% endblock %}
+
+{% block content %}
+  <h2>Manage Job Categories</h2>
+  <p><a href="{% url 'category_create' %}" class="button">Create New Category</a></p>
+
+  {% if categories %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category in categories %}
+          <tr>
+            <td>{{ category.name }}</td>
+            <td>
+              <a href="{% url 'category_update' category.pk %}">Edit</a> |
+              <a href="{% url 'category_delete' category.pk %}">Delete</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No categories found.</p>
+  {% endif %}
+{% endblock %}
