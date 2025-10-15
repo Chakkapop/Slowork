@@ -31,10 +31,6 @@ class User(AbstractUser):
 
     REQUIRED_FIELDS = ["email"]
 
-    def save(self, *args, **kwargs):
-        if self.role == self.ROLE_ADMIN and not self.is_staff:
-            self.is_staff = True
-        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.username

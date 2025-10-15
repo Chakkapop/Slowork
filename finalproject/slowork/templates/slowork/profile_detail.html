@@ -17,7 +17,9 @@
 {% if profile_user.phone %}
     <p><strong>Phone:</strong> {{ profile_user.phone }}</p>
 {% endif %}
-
+{% if profile_user.email %}
+    <p><strong>Email:</strong> {{ profile_user.email }}</p>
+{% endif %}
 {% if profile_user.bio %}
     <section>
         <h3>About Me</h3>
@@ -45,20 +47,6 @@
     <p><a href="{% url 'profile' %}">Edit your profile</a></p>
 {% endif %}
 
-{% if pending_review_jobs %}
-    <section>
-        <h3>Pending reviews</h3>
-        <p>คุณมีงานที่เสร็จแล้วกับผู้ใช้นี้ สามารถรีวิวได้ด้านล่าง:</p>
-        <ul>
-            {% for job in pending_review_jobs %}
-                <li>
-                    {{ job.title }}
-                    <a class="button" href="{% url 'review_create' job.pk review_target %}">Review now</a>
-                </li>
-            {% endfor %}
-        </ul>
-    </section>
-{% endif %}
 
 <section>
     <h3>Recent reviews</h3>

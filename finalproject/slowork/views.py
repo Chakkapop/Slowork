@@ -92,7 +92,6 @@ def profile_edit(request):
 
 
 def profile_view(request, user_id: int):
-    """Public profile page showing ratings and reviews."""
     profile_user = get_object_or_404(
         User.objects.prefetch_related("reviews_received__reviewer", "reviews_received__job"),
         pk=user_id,
@@ -101,48 +100,11 @@ def profile_view(request, user_id: int):
         profile_user.reviews_received.select_related("reviewer", "job")
         .order_by("-created_at")
     )
-
-    pending_review_jobs: list[Job] = []
-    review_target: str | None = None
-    if request.user.is_authenticated and request.user != profile_user:
-        if request.user.is_employer and profile_user.is_freelancer:
-            pending_review_jobs = list(
-                Job.objects.filter(
-                    employer=request.user,
-                    selected_application__freelancer=profile_user,
-                    status=Job.STATUS_COMPLETED,
-                )
-                .exclude(
-                    reviews__reviewer=request.user,
-                    reviews__reviewee=profile_user,
-                )
-                .order_by("-updated_at")
-                .distinct()
-            )
-            if pending_review_jobs:
-                review_target = "freelancer"
-        elif request.user.is_freelancer and profile_user.is_employer:
-            pending_review_jobs = list(
-                Job.objects.filter(
-                    employer=profile_user,
-                    selected_application__freelancer=request.user,
-                    status=Job.STATUS_COMPLETED,
-                )
-                .exclude(
-                    reviews__reviewer=request.user,
-                    reviews__reviewee=profile_user,
-                )
-                .order_by("-updated_at")
-                .distinct()
-            )
-            if pending_review_jobs:
-                review_target = "employer"
     
     context = {
         "profile_user": profile_user,
         "reviews": reviews,
-        "pending_review_jobs": pending_review_jobs,
-        "review_target": review_target,
+
     }
     return render(request, "slowork/profile_detail.html", context)
 

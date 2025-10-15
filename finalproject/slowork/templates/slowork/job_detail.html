@@ -28,8 +28,8 @@
     {% if user.is_authenticated %}
         {% if user == job.employer %}
         <p>
-            <a href="{% url 'job_update' job.pk %}">Edit</a>
-            <a href="{% url 'job_delete' job.pk %}">Delete</a>
+            <a href="{% url 'job_update' job.pk %}" role="button" style="background-color: #007bff; color: white; border-color: #007bff;">Edit</a>
+            <a href="{% url 'job_delete' job.pk %}" role="button" style="background-color: #dc3545; color: white; border-color: #dc3545;">Delete</a>
             {% if job.status != job.STATUS_COMPLETED %}
                 <form method="post" action="{% url 'job_mark_completed' job.pk %}" style="display:inline;">
                     {% csrf_token %}
@@ -39,7 +39,7 @@
         </p>
         {% endif %}
         {% if user.is_market_admin %}
-            <a href="{% url 'job_delete' job.pk %}">Delete</a>
+            <a href="{% url 'job_delete' job.pk %}" role="button" style="background-color: #dc3545; color: white; border-color: #dc3545;">Delete (Admin)</a>
         {% endif %}
     {% endif %}
 </article>
@@ -86,11 +86,11 @@
                     {% if job.status == job.STATUS_OPEN and application.status == application.STATUS_PENDING %}
                         <form method="post" action="{% url 'application_update_status' application.pk 'accept' %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit">Accept</button>
+                            <button type="submit" style="background-color: #28a745; border-color: #28a745;">Accept</button>
                         </form>
                         <form method="post" action="{% url 'application_update_status' application.pk 'reject' %}" style="display:inline;">
                             {% csrf_token %}
-                            <button type="submit">Reject</button>
+                            <button type="submit" style="background-color: #dc3545; border-color: #dc3545;">Reject</button>
                         </form>
                     {% elif application.status == application.STATUS_ACCEPTED %}
                         <em>Accepted</em>
@@ -131,19 +131,21 @@
                         </ul>
                     {% endif %}
                     {% if user.is_authenticated and user == job.employer %}
+                        <div style="margin-top: 1rem;">
                         {% if submission.status != submission.STATUS_APPROVED %}
                             <form method="post" action="{% url 'work_submission_update_status' submission.pk 'approve' %}" style="display:inline;">
                                 {% csrf_token %}
-                                <button type="submit">Approve</button>
+                                <button type="submit" style="background-color: #28a745; border-color: #28a745;">Approve</button>
                             </form>
                         {% endif %}
                         {% if submission.status != submission.STATUS_CHANGES_REQUESTED %}
                             <form method="post" action="{% url 'work_submission_update_status' submission.pk 'request_changes' %}" style="display:inline-block; margin-top: 0.5rem;">
                                 {% csrf_token %}
                                 <textarea name="change_reason" rows="3" placeholder="Explain what needs to be changed" required></textarea>
-                                <button type="submit">Request changes</button>
+                                <button type="submit" style="background-color: #ffc107; border-color: #ffc107; color: black;">Request changes</button>
                             </form>
                         {% endif %}
+                        </div>
                     {% endif %}
                 </li>
             {% endfor %}
